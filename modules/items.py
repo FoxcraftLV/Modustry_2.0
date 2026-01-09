@@ -82,6 +82,7 @@ class Item(ModElement):
 			"hidden_on_planets": data["hidden_on_planets"],
 			})
 		
+		# Write the file
 		filemane = f"items/{data['name']}.json"
 		project.write_json(filemane, metadata)
 
