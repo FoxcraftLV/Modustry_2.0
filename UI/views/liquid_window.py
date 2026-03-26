@@ -1,11 +1,8 @@
-import os
 import tkinter as tk
-from tkinter import filedialog
 from PIL import Image, ImageTk
 from customtkinter import *
 
 from UI.utils.global_functions import choose_color
-
 
 def limit_name_length(name_var):
     limit = 30
@@ -65,18 +62,15 @@ def liquid_creator(root, callback):
     selection_size = tk.DoubleVar(value=24.0)
     full_override = tk.StringVar()
 
-    # --- IMAGE SELECTION ---
-    picture_path = filedialog.askopenfilename(
-        title="Select your sprite (48x48 recommended)",
-        filetypes=[("Image files", "*.png;*.jpg;*.jpeg")]
-    )
+    # -- Icon ---
+    try:
+        current_dir = os.path.dirname(__file__)
+        parent_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+        icon_path = os.path.join(parent_dir, "assets\icons", "main_ico.ico")
 
-    if not picture_path:
-        return
-
-    picture = ImageTk.PhotoImage(Image.open(picture_path).resize((256, 256), Image.Resampling.NEAREST))
-    name.set(os.path.basename(picture_path).split(".")[0])
-    name.trace("w", lambda *args: limit_name_length(name))
+    except:
+        user = os.getlogin()
+        icon_path = f"C:/Users/{user}/AppData/Local/Programs/Modustry_2.0/assets/icons/main_ico.ico"
 
     # --- WINDOW ---
     window = CTkToplevel(root)
@@ -84,72 +78,76 @@ def liquid_creator(root, callback):
     window.resizable(False, False)
     window.geometry("+150+10")
     window.attributes("-topmost", True)
+    window.after(250, lambda: window.iconbitmap(icon_path))
 
-    # --- UI COLORS ---
-    dark_color_1 = "#1A1A1A"
-    gray_color_1 = "#6a6a6a"
-    light_blue_color = "#408ef2"
-    dark_blue_color = "#2c63aa"
-    hover_color = "#1f4676"
-    whiteColor = "#eeeeee"
+    # --- THEME ---
+    theme = get_theme()
+
+    # --- IMAGE SELECTION ---
+    picture_path = filedialog.askopenfilename(
+        title="Select your sprite (48x48 recommended)",
+        filetypes=[("Image files", "*.png;*.jpg;*.jpeg")],
+        initialdir=os.path.join(os.path.dirname(__file__), "..", "..")
+    )
+
+    if not picture_path:
+        return
+
+    picture = ImageTk.PhotoImage(Image.open(picture_path).resize((256, 256), Image.Resampling.NEAREST), master=window)
+    name.set(os.path.basename(picture_path).split(".")[0])
+    name.trace("w", lambda *args: limit_name_length(name))
 
     # --- UI LAYOUT (unchanged) ---
-    UC_box = tk.LabelFrame(window, text="Global Properties", bg=dark_color_1, fg=whiteColor)
+    UC_box = tk.LabelFrame(window, text="Global Properties", **theme.get_frame_colors())
     UC_box.grid(row=0, column=0, padx=10, pady=10)
 
-    liquid_box = tk.LabelFrame(window, text="Liquid Properties", bg=dark_color_1, fg=whiteColor)
+    liquid_box = tk.LabelFrame(window, text="Liquid Properties", **theme.get_frame_colors())
     liquid_box.grid(row=0, column=1, padx=10, pady=10)
 
-    picture_box = tk.Label(window, image=picture, bg=dark_color_1)
-    picture_box._strong_ref_image = picture
+    window._photo_image = picture
+    picture_box = tk.Label(window, image=picture, **theme.get_label_colors())
     picture_box.grid(row=0, column=2, padx=10, pady=10)
 
     # --- UNLOCKABLE CONTENT FIELDS ---
-    name_box = tk.LabelFrame(UC_box, bg=dark_color_1)
+    name_box = tk.LabelFrame(UC_box, **theme.get_frame_colors())
     name_box.pack(pady=10)
-    tk.Label(name_box, text="Identification Name:", bg=dark_color_1, fg=whiteColor).pack(side=tk.LEFT)
-    tk.Entry(name_box, textvariable=name, bg=dark_color_1, fg=whiteColor, insertbackground=whiteColor).pack(side=tk.LEFT)
+    tk.Label(name_box, text="Identification Name:", **theme.get_label_colors()).pack(side=tk.LEFT)
+    tk.Entry(name_box, textvariable=name, **theme.get_entry_colors()).pack(side=tk.LEFT)
 
-    description_box = tk.LabelFrame(UC_box, bg=dark_color_1)
+    description_box = tk.LabelFrame(UC_box, **theme.get_frame_colors())
     description_box.pack()
-    tk.Label(description_box, text="Main description:", bg=dark_color_1, fg=whiteColor).pack(side=tk.LEFT)
-    description_text = tk.Text(description_box, height=5, width=20, bg=dark_color_1, fg=whiteColor, insertbackground=whiteColor)
+    tk.Label(description_box, text="Main description:", **theme.get_label_colors()).pack(side=tk.LEFT)
+    description_text = tk.Text(description_box, height=5, width=20)
     description_text.pack(side=tk.LEFT)
 
-    localized_box = tk.LabelFrame(UC_box, bg=dark_color_1)
+    localized_box = tk.LabelFrame(UC_box, **theme.get_frame_colors())
     localized_box.pack(pady=10)
-    tk.Label(localized_box, text="Name in-game:", bg=dark_color_1, fg=whiteColor).pack(side=tk.LEFT)
-    tk.Entry(localized_box, textvariable=localized_name, bg=dark_color_1, fg=whiteColor, insertbackground=whiteColor).pack(side=tk.LEFT)
+    tk.Label(localized_box, text="Name in-game:", **theme.get_label_colors()).pack(side=tk.LEFT)
+    tk.Entry(localized_box, textvariable=localized_name, **theme.get_entry_colors()).pack(side=tk.LEFT)
 
     # Checkboxes
     CTkCheckBox(UC_box, text="Unlocked in tech tree", variable=always_unlocked,
-                onvalue="true", offvalue="false",
-                fg_color=dark_blue_color, bg_color=dark_color_1).pack(anchor="w", padx=50)
+                onvalue="true", offvalue="false").pack(anchor="w", padx=50)
 
-    CTkCheckBox(UC_box, text="Description in Tech Tree", variable=inline_description,
-                fg_color=dark_blue_color, bg_color=dark_color_1).pack(anchor="w", padx=50)
+    CTkCheckBox(UC_box, text="Description in Tech Tree", variable=inline_description).pack(anchor="w", padx=50)
 
     CTkCheckBox(UC_box, text="Hide details", variable=hide_details,
-                onvalue="true", offvalue="false",
-                fg_color=dark_blue_color, bg_color=dark_color_1).pack(anchor="w", padx=50)
+                onvalue="true", offvalue="false").pack(anchor="w", padx=50)
 
     CTkCheckBox(UC_box, text="Have an icon", variable=generate_icons,
-                onvalue="true", offvalue="false",
-                fg_color=dark_blue_color, bg_color=dark_color_1).pack(anchor="w", padx=50)
+                onvalue="true", offvalue="false").pack(anchor="w", padx=50)
 
     tk.Scale(UC_box, label="Size (%)", from_=0, to=100, orient=tk.HORIZONTAL,
-             variable=selection_size, bg=dark_color_1, fg=whiteColor).pack(pady=10)
+             variable=selection_size).pack(pady=10)
 
     # --- LIQUID-SPECIFIC FIELDS ---
-    button_frame = tk.LabelFrame(liquid_box, bg=dark_color_1)
+    button_frame = tk.LabelFrame(liquid_box, **theme.get_frame_colors())
     button_frame.grid(row=0, column=0, padx=10, pady=5)
 
     def color_btn(text, var, col):
         btn = CTkButton(button_frame, text=text,
                         command=lambda: var.set(choose_color(window, btn)),
-                        width=200, height=30,
-                        fg_color=light_blue_color, hover_color=dark_blue_color,
-                        text_color=dark_color_1)
+                        width=200, height=30)
         btn.grid(row=0, column=col, padx=5, pady=5)
         return btn
 
@@ -159,13 +157,12 @@ def liquid_creator(root, callback):
     color_btn("Light color", light_color, 1)
 
     # Sliders
-    scale_box = tk.LabelFrame(liquid_box, bg=dark_color_1)
+    scale_box = tk.LabelFrame(liquid_box, **theme.get_frame_colors())
     scale_box.grid(row=1, column=0, padx=10, pady=20)
 
     def slider(label, var, row, col, frm=0, to=1, res=0.1):
         tk.Scale(scale_box, label=label, from_=frm, to=to, resolution=res,
-                 orient=tk.HORIZONTAL, variable=var,
-                 bg=dark_color_1, fg=whiteColor).grid(row=row, column=col, padx=10, pady=5)
+                 orient=tk.HORIZONTAL, variable=var).grid(row=row, column=col, padx=10, pady=5)
 
     slider("Flammability", flammability, 0, 0)
     slider("Explosiveness", explosiveness, 0, 1)
@@ -179,13 +176,12 @@ def liquid_creator(root, callback):
     slider("Animation scale liquid", animation_scale_liquid, 4, 1, frm=0, to=300, res=1)
 
     # Checkboxes
-    check_box = tk.LabelFrame(liquid_box, bg=dark_color_1)
+    check_box = tk.LabelFrame(liquid_box, **theme.get_frame_colors())
     check_box.grid(row=0, column=1, padx=10, pady=5)
 
     def check(text, var):
         CTkCheckBox(check_box, text=text, variable=var,
-                    onvalue="true", offvalue="false",
-                    fg_color=dark_blue_color, bg_color=dark_color_1).pack(anchor="w", padx=10)
+                    onvalue="true", offvalue="false").pack(anchor="w", padx=10)
 
     check("Hidden", hidden)
     check("Block reactive", block_reactive)
@@ -244,7 +240,6 @@ def liquid_creator(root, callback):
         callback(data, picture_path)
 
     CTkButton(window, text="Save", command=on_save,
-              fg_color=light_blue_color, hover_color=dark_blue_color,
               width=100, height=40).grid(row=1, column=0, pady=20)
 
     window.lift()

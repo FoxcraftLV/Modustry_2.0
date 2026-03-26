@@ -1,11 +1,10 @@
-import os
 import tkinter as tk
-from tkinter import filedialog
 from PIL import Image, ImageTk
 from customtkinter import *
+import os
+from tkinter import filedialog
 
 from UI.utils.global_functions import choose_color
-
 
 def limit_name_length(name_var):
 	limit = 30
@@ -14,7 +13,7 @@ def limit_name_length(name_var):
 		name_var.set(value[:limit])
 
 
-def item_creator(root, callback):
+def item_creator(root, callback, initial_data=None):
 	"""
 	Opens a window allowing the user to create an item.
 	Returns data as a dict + image_path to the callback
@@ -48,126 +47,128 @@ def item_creator(root, callback):
 	icon_id = tk.IntVar(value=0)
 	selection_size = tk.DoubleVar(value=24.0)
 	full_override = tk.StringVar()
-	
-	# --- IMAGE SELECTION ---
-	picture_path = filedialog.askopenfilename(
-		title="Select your sprite (48x48 recommended)",
-		filetypes=[("Image files", "*.png;*.jpg;*.jpeg")]
-		)
-	
-	if not picture_path:
-		return
-	
-	picture = ImageTk.PhotoImage(Image.open(picture_path).resize((256, 256), Image.Resampling.NEAREST))
-	name.set(os.path.basename(picture_path).split(".")[0])
-	name.trace("w", lambda *args: limit_name_length(name))
-	
+
+	# -- Icon ---
+	try:
+		current_dir = os.path.dirname(__file__)
+		parent_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+		icon_path = os.path.join(parent_dir, "assets\\icons", "main_ico.ico")
+
+	except:
+		user = os.getlogin()
+		icon_path = f"C:/Users/{user}/AppData/Local/Programs/Modustry_2.0/assets/icons/main_ico.ico"
+
 	# --- WINDOW ---
 	window = CTkToplevel(root)
 	window.title("Item Creator")
 	window.resizable(False, False)
 	window.geometry("+500+10")
 	window.attributes("-topmost", True)
-	
+	window.after(250, lambda: window.iconbitmap(icon_path))
+
+	# --- IMAGE SELECTION ---
+	picture_path = filedialog.askopenfilename(
+		title="Select your sprite (48x48 recommended)",
+		filetypes=[("Image files", "*.png;*.jpg;*.jpeg")],
+		initialdir=os.path.join(os.path.dirname(__file__), "..", "..", "assets", "textures")
+	)
+
+	if not picture_path:
+		return
+
+	picture = CTkImage(light_image=Image.open(picture_path).resize((256, 256), Image.Resampling.NEAREST), size=(256, 256))
+	name.set(os.path.basename(picture_path).split(".")[0])
+	name.trace("w", lambda *args: limit_name_length(name))
+
 	# --- UI LAYOUT ---
-	dark_color_1 = "#1A1A1A"
-	gray_color_1 = "#6a6a6a"
-	light_blue_color = "#408ef2"
-	dark_blue_color = "#2c63aa"
-	hover_color = "#1f4676"
-	whiteColor = "#eeeeee"
-	
 	# Global properties frame
-	UC_box = tk.LabelFrame(window, text="Global Properties", bg=dark_color_1, fg=whiteColor)
+	UC_box = CTkFrame(window)
 	UC_box.grid(row=0, column=0, padx=10, pady=10)
+	UC_name = CTkLabel(UC_box, text="Global Properties", font=("Arial", 20, "bold"))
+	UC_name.pack(pady=10)
 	
 	# Item properties frame
-	item_box = tk.LabelFrame(window, text="Item Properties", bg=dark_color_1, fg=whiteColor)
+	item_box = CTkFrame(window)
 	item_box.grid(row=0, column=1, padx=10, pady=10)
+	item_name = CTkLabel(item_box, text="Item Properties", font=("Arial", 20, "bold"))
+	item_name.pack(pady=10)
 	
 	# Picture preview
-	picture_box = tk.Label(window, image=picture, bg=dark_color_1)
-	picture_box._strong_ref_image = picture
+	picture_box = CTkLabel(window, image=picture, text="")
 	picture_box.grid(row=0, column=2, padx=10, pady=10)
 	
 	# --- UNLOCKABLE CONTENT FIELDS ---
-	name_box = tk.LabelFrame(UC_box, bg=dark_color_1)
+	name_box = CTkFrame(UC_box)
 	name_box.pack(pady=10)
-	tk.Label(name_box, text="Identification Name:", bg=dark_color_1, fg=whiteColor).pack(side=tk.LEFT)
-	tk.Entry(name_box, textvariable=name, bg=dark_color_1, fg=whiteColor, insertbackground=whiteColor).pack(side=tk.LEFT)
+	CTkLabel(name_box, text="Identification Name:").pack(side=tk.LEFT)
+	CTkEntry(name_box, textvariable=name).pack(side=tk.LEFT)
 	
-	description_box = tk.LabelFrame(UC_box, bg=dark_color_1)
+	description_box = CTkFrame(UC_box)
 	description_box.pack()
-	tk.Label(description_box, text="Main description:", bg=dark_color_1, fg=whiteColor).pack(side=tk.LEFT)
-	description_text = tk.Text(description_box, height=5, width=20, bg=dark_color_1, fg=whiteColor, insertbackground=whiteColor)
+	CTkLabel(description_box, text="Main description:").pack(side=tk.LEFT)
+	description_text = CTkTextbox(description_box, width=200, height=100, activate_scrollbars=False)
 	description_text.pack(side=tk.LEFT)
 	
-	localized_box = tk.LabelFrame(UC_box, bg=dark_color_1)
+	localized_box = CTkFrame(UC_box)
 	localized_box.pack(pady=10)
-	tk.Label(localized_box, text="Name in-game:", bg=dark_color_1, fg=whiteColor).pack(side=tk.LEFT)
-	tk.Entry(localized_box, textvariable=localized_name, bg=dark_color_1, fg=whiteColor, insertbackground=whiteColor).pack(side=tk.LEFT)
+	CTkLabel(localized_box, text="Name in-game:").pack(side=tk.LEFT)
+	CTkEntry(localized_box, textvariable=localized_name).pack(side=tk.LEFT)
 	
 	# Checkboxes
 	CTkCheckBox(UC_box, text="Unlocked in tech tree", variable=always_unlocked,
-	            onvalue="true", offvalue="false",
-	            fg_color=dark_blue_color, bg_color=dark_color_1).pack(anchor="w", padx=50)
+	            onvalue="true", offvalue="false").pack(anchor="w", padx=50)
 	
-	CTkCheckBox(UC_box, text="Description in Tech Tree", variable=inline_description,
-	            fg_color=dark_blue_color, bg_color=dark_color_1).pack(anchor="w", padx=50)
+	CTkCheckBox(UC_box, text="Description in Tech Tree", variable=inline_description).pack(anchor="w", padx=50)
 	
 	CTkCheckBox(UC_box, text="Hide details", variable=hide_details,
-	            onvalue="true", offvalue="false",
-	            fg_color=dark_blue_color, bg_color=dark_color_1).pack(anchor="w", padx=50)
+	            onvalue="true", offvalue="false").pack(anchor="w", padx=50)
 	
 	CTkCheckBox(UC_box, text="Have an icon", variable=generate_icons,
-	            onvalue="true", offvalue="false",
-	            fg_color=dark_blue_color, bg_color=dark_color_1).pack(anchor="w", padx=50)
+	            onvalue="true", offvalue="false").pack(anchor="w", padx=50)
 	
 	# Selection size
-	tk.Scale(UC_box, label="Size (%)", from_=0, to=100, orient=tk.HORIZONTAL,
-	         variable=selection_size, bg=dark_color_1, fg=whiteColor).pack(pady=10)
+	CTkLabel(UC_box, text="Size (%)").pack(side=tk.LEFT)
+	CTkSlider(UC_box, from_=0, to=100, orientation=tk.HORIZONTAL, variable=selection_size).pack(pady=10)
 	
 	# --- ITEM-SPECIFIC FIELDS ---
 	color_button = CTkButton(item_box, text="Choose color",
-	                         command=lambda: color.set(choose_color(window, color_button)),
-	                         fg_color=light_blue_color, hover_color=dark_blue_color)
+	                         command=lambda: color.set(choose_color(window, color_button)))
 	color_button.pack(pady=10)
 	
 	# Sliders
-	scale_box = tk.LabelFrame(item_box, bg=dark_color_1)
+	scale_box = CTkFrame(item_box)
 	scale_box.pack()
 	
-	def slider(label, var, row, col, frm=0, to=10, res=0.1):
-		tk.Scale(scale_box, label=label, from_=frm, to=to, resolution=res,
-		         orient=tk.HORIZONTAL, variable=var,
-		         bg=dark_color_1, fg=whiteColor).grid(row=row, column=col, padx=10, pady=5)
+	def slider(label, var, row, col, frm=0, to=10, res=100):
+		box = CTkFrame(scale_box)
+		box.grid(row=row, column=col, padx=10, pady=5)
+		CTkLabel(box, text=label, font=("Arial", 20, "bold")).pack(pady=10)
+		CTkSlider(box, from_=frm, to=to, number_of_steps=res,
+		         orientation=tk.HORIZONTAL, variable=var).pack(pady=10)
 	
 	slider("Explosiveness", explosiveness, 0, 0)
 	slider("Flammability", flammability, 0, 1)
 	slider("Radioactivity", radioactivity, 1, 0)
 	slider("Charge", charge, 1, 1)
-	slider("Hardness", hardness, 2, 0, res=1)
+	slider("Hardness", hardness, 2, 0, res=10)
 	slider("Cost", cost, 2, 1)
 	slider("Health Scaling", health_scaling, 3, 0)
-	slider("Frames", frames, 3, 1, frm=0, to=60, res=1)
-	slider("Transition Frames", transition_frames, 4, 0, frm=0, to=60, res=1)
+	slider("Frames", frames, 3, 1, frm=0, to=60, res=60)
+	slider("Transition Frames", transition_frames, 4, 0, frm=0, to=60, res=60)
 	slider("Frame Time", frame_time, 4, 1)
 	
 	# Checkboxes
-	check_box = tk.LabelFrame(item_box, bg=dark_color_1)
+	check_box = CTkFrame(item_box)
 	check_box.pack(pady=10)
 	
 	CTkCheckBox(check_box, text="Low Priority", variable=low_priority,
-	            onvalue="true", offvalue="false",
-	            fg_color=dark_blue_color, bg_color=dark_color_1).grid(row=0, column=0)
+	            onvalue="true", offvalue="false").grid(row=0, column=0)
 	
 	CTkCheckBox(check_box, text="Buildable", variable=buildable,
-	            onvalue="true", offvalue="false",
-	            fg_color=dark_blue_color, bg_color=dark_color_1).grid(row=0, column=1)
+	            onvalue="true", offvalue="false").grid(row=0, column=1)
 	
 	CTkCheckBox(check_box, text="Hidden", variable=hidden,
-	            onvalue="true", offvalue="false",
-	            fg_color=dark_blue_color, bg_color=dark_color_1).grid(row=1, column=0)
+	            onvalue="true", offvalue="false").grid(row=1, column=0)
 	
 	# --- SAVE BUTTON ---
 	def on_save():
@@ -207,7 +208,6 @@ def item_creator(root, callback):
 		callback(data, picture_path)
 	
 	CTkButton(window, text="Save", command=on_save,
-	          fg_color=light_blue_color, hover_color=dark_blue_color,
 	          width=100, height=40).grid(row=1, column=0, pady=20)
 	
 	window.lift()

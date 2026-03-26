@@ -1,5 +1,5 @@
 from customtkinter import *
-from tkinter import filedialog, ttk
+from tkinter import filedialog
 from UI.viewmodels.mod_exporter import ModExporterViewModel
 
 
@@ -43,7 +43,7 @@ def mod_window(root):
 	CTkCheckBox(window, text="Hidden", variable=hidden, onvalue="true", offvalue="false").pack()
 	
 	# Progress Bar
-	progress = ttk.Progressbar(window, orient="horizontal", length=300, mode="determinate")
+	progress = CTkProgressBar(window, width=300)
 	progress.pack(pady=20)
 	
 	# --- Button action ---
@@ -69,7 +69,7 @@ def mod_window(root):
 		# Export elements
 		total = len(vm.project.elements)
 		progress["maximum"] = total
-		
+
 		def update_progress():
 			progress["value"] += 1
 			window.update_idletasks()
