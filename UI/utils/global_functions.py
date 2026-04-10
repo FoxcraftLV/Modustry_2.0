@@ -1,6 +1,8 @@
 from customtkinter import CTkButton
 from tkinter import colorchooser
 
+DEBUG = False
+
 def choose_color(master, widget: CTkButton):
 	"""
 	Open a color chooser dialog and applies the selected color to the given widget.

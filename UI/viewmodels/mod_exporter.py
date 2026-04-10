@@ -1,22 +1,33 @@
+from UI.utils.global_functions import DEBUG
 from core.project import Project
 from core.registry import registry
 
 class ModExporterViewModel:
-	def __init__(self):
-		self.project = None
-	
+	def __init__(self, project=None):
+		self.project: Project | None = project
+
 	def create_project(self, path):
+		"""
+		Creates a new project from the given path
+		"""
 		self.project = Project(path)
 		self.project.create_structure()
 	
 	def export_metadata(self, name, display_name, author, description, min_version, hidden):
+		"""
+		Exports a project metadata
+		"""
 		self.project.write_mod_metadata(name, display_name, author, description, min_version, hidden)
 	
 	def export_elements(self, elements, progress_callback=None):
-		for element_type, data in elements:
+		for element_type, data, image_path in elements:
+
+			if DEBUG:
+				print(element_type, data, image_path)
+
 			element_cls = registry.get(element_type)
 			element = element_cls()
-			element.generate(data, self.project)
+			element.generate(data, self.project, image_path)
 			
 			if progress_callback:
 				progress_callback()

@@ -54,7 +54,7 @@ class Liquid(ModElement):
 		"gas": bool,
 		}
 	
-	def generate(self, data, project):
+	def generate(self, data, project, image_path):
 		"""
 		Generate the JSON/HJSON file for this liquid.
 		Combines UnlockableContent metadata with liquid-specifics fields.
@@ -106,8 +106,10 @@ class Liquid(ModElement):
 			})
 		
 		# Write the file
-		filename = f"{data['name']}.json"
-		project.write_json_metadata(filename, metadata)
+		json_filename = f"content/liquids/{data['name']}.json"
+		sprite_dest = f"sprites/liquids/{data['name']}.png"
+		project.write_json(json_filename, metadata)
+		project.copy_asset(image_path, sprite_dest)
 
 
 # Register the Liquid module

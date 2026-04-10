@@ -17,6 +17,7 @@ class UnlockableContent:
 			selection_size: float = 1.0,
 			full_override: str = ""
 			):
+
 		self.localized_name = localized_name
 		self.description = description
 		self.details = details

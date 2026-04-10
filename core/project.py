@@ -2,19 +2,21 @@ import os
 import json
 import shutil
 from pathlib import Path
+from typing import Tuple
+
 from core.registry import registry
 
 class Project:
 	def __init__(self, path: str):
 		self.path = Path(path)
-		self.elements = [] # (type_id, data)
+		self.elements: list[Tuple[str, dict, str]] = [] # (type_id, data, sprite)
 	
 	def save(self, file_path: str):
 		data = {
 			"version": 1,
 			"elements": [
-				{"type": type_id, "data": data}
-				for type_id ,data in self.elements
+				{"type": type_id, "data": data, "sprite_path":sprite}
+				for type_id ,data, sprite in self.elements
 				]
 			}
 		
@@ -28,15 +30,17 @@ class Project:
 		self.elements.clear()
 		
 		for element in data["elements"]:
-			type_id = element["type"]
-			element_data = element["data"]
+			type_id: str = element["type"]
+			element_data: dict = element["data"]
+			sprite_path: str = element["sprite_path"]
 			
 			# Validate type exists
-			if registry.get(type_id) is None:
+			element_cls = registry.get(type_id)
+			if element_cls is None:
 				print(f"Warning: Unknown element type '{type_id}' in project file.")
 				continue
 			
-			self.elements.append((type_id, element_data))
+			self.elements.append((type_id, element_data, sprite_path))
 	
 	def create_structure(self):
 		"""

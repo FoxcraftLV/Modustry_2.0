@@ -142,7 +142,7 @@ class MainWindow:
 		self.liquid_bin_buttons = []
 		self.liquid_labels = []
 		self.liquid_images = []
-		
+
 		self.liquids_frame = CTkFrame(self.liquids_tab, border_width=2)
 		self.liquids_frame.pack(side="left", padx=10, pady=10)
 		
@@ -183,7 +183,7 @@ class MainWindow:
 	
 	def _open_export_window(self):
 		from UI.views.mod_window import mod_window
-		mod_window(self.root)
+		mod_window(self.root, self.project)
 
 	def restart_app(self):
 		python = sys.executable
@@ -255,8 +255,7 @@ class MainWindow:
 		
 		self.items_images = []
 		
-		for i, (_, data) in enumerate(items):
-			img_path = f"{self.project.path}/sprites/items/{data['name']}.png"
+		for i, (_, data, img_path) in enumerate(items):
 			if os.path.exists(img_path):
 				img = CTkImage(Image.open(img_path).resize((50, 50), Image.Resampling.NEAREST), size=(50, 50))
 			else:
@@ -281,8 +280,7 @@ class MainWindow:
 
 		self.liquid_images = []
 
-		for i, (_, data) in enumerate(liquids):
-			img_path = f"{self.project.path}/sprites/items/liquids/{data['name']}.png"
+		for i, (_, data, img_path) in enumerate(liquids):
 			if os.path.exists(img_path):
 				img = ImageTk.PhotoImage(Image.open(img_path).resize((50, 50)))
 			else:

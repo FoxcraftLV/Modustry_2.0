@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image
 from customtkinter import *
 import os
 from tkinter import filedialog
@@ -54,7 +54,7 @@ def item_creator(root, callback, initial_data=None):
 		parent_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
 		icon_path = os.path.join(parent_dir, "assets\\icons", "main_ico.ico")
 
-	except:
+	except FileNotFoundError:
 		user = os.getlogin()
 		icon_path = f"C:/Users/{user}/AppData/Local/Programs/Modustry_2.0/assets/icons/main_ico.ico"
 
@@ -82,10 +82,10 @@ def item_creator(root, callback, initial_data=None):
 
 	# --- UI LAYOUT ---
 	# Global properties frame
-	UC_box = CTkFrame(window)
-	UC_box.grid(row=0, column=0, padx=10, pady=10)
-	UC_name = CTkLabel(UC_box, text="Global Properties", font=("Arial", 20, "bold"))
-	UC_name.pack(pady=10)
+	uc_box = CTkFrame(window)
+	uc_box.grid(row=0, column=0, padx=10, pady=10)
+	uc_name = CTkLabel(uc_box, text="Global Properties", font=("Arial", 20, "bold"))
+	uc_name.pack(pady=10)
 	
 	# Item properties frame
 	item_box = CTkFrame(window)
@@ -98,37 +98,38 @@ def item_creator(root, callback, initial_data=None):
 	picture_box.grid(row=0, column=2, padx=10, pady=10)
 	
 	# --- UNLOCKABLE CONTENT FIELDS ---
-	name_box = CTkFrame(UC_box)
+	name_box = CTkFrame(uc_box)
 	name_box.pack(pady=10)
 	CTkLabel(name_box, text="Identification Name:").pack(side=tk.LEFT)
 	CTkEntry(name_box, textvariable=name).pack(side=tk.LEFT)
 	
-	description_box = CTkFrame(UC_box)
+	description_box = CTkFrame(uc_box)
 	description_box.pack()
 	CTkLabel(description_box, text="Main description:").pack(side=tk.LEFT)
 	description_text = CTkTextbox(description_box, width=200, height=100, activate_scrollbars=False)
 	description_text.pack(side=tk.LEFT)
+	description_text.insert("1.0", description.get())
 	
-	localized_box = CTkFrame(UC_box)
+	localized_box = CTkFrame(uc_box)
 	localized_box.pack(pady=10)
 	CTkLabel(localized_box, text="Name in-game:").pack(side=tk.LEFT)
 	CTkEntry(localized_box, textvariable=localized_name).pack(side=tk.LEFT)
 	
 	# Checkboxes
-	CTkCheckBox(UC_box, text="Unlocked in tech tree", variable=always_unlocked,
+	CTkCheckBox(uc_box, text="Unlocked in tech tree", variable=always_unlocked,
 	            onvalue="true", offvalue="false").pack(anchor="w", padx=50)
 	
-	CTkCheckBox(UC_box, text="Description in Tech Tree", variable=inline_description).pack(anchor="w", padx=50)
+	CTkCheckBox(uc_box, text="Description in Tech Tree", variable=inline_description).pack(anchor="w", padx=50)
 	
-	CTkCheckBox(UC_box, text="Hide details", variable=hide_details,
+	CTkCheckBox(uc_box, text="Hide details", variable=hide_details,
 	            onvalue="true", offvalue="false").pack(anchor="w", padx=50)
 	
-	CTkCheckBox(UC_box, text="Have an icon", variable=generate_icons,
+	CTkCheckBox(uc_box, text="Have an icon", variable=generate_icons,
 	            onvalue="true", offvalue="false").pack(anchor="w", padx=50)
 	
 	# Selection size
-	CTkLabel(UC_box, text="Size (%)").pack(side=tk.LEFT)
-	CTkSlider(UC_box, from_=0, to=100, orientation=tk.HORIZONTAL, variable=selection_size).pack(pady=10)
+	CTkLabel(uc_box, text="Size (%)").pack(side=tk.LEFT)
+	CTkSlider(uc_box, from_=0, to=100, orientation=tk.HORIZONTAL, variable=selection_size).pack(pady=10)
 	
 	# --- ITEM-SPECIFIC FIELDS ---
 	color_button = CTkButton(item_box, text="Choose color",
@@ -142,9 +143,13 @@ def item_creator(root, callback, initial_data=None):
 	def slider(label, var, row, col, frm=0, to=10, res=100):
 		box = CTkFrame(scale_box)
 		box.grid(row=row, column=col, padx=10, pady=5)
-		CTkLabel(box, text=label, font=("Arial", 20, "bold")).pack(pady=10)
+		lbl = (CTkLabel(box, text=f"{label}: {var.get():.2f}", font=("Arial", 12, "bold")))
+		lbl.pack(pady=10)
+		def update_label(value):
+			lbl.configure(text=f"{label}: {float(value):.2f}")
+
 		CTkSlider(box, from_=frm, to=to, number_of_steps=res,
-		         orientation=tk.HORIZONTAL, variable=var).pack(pady=10)
+		         orientation=tk.HORIZONTAL, variable=var, command=update_label).pack(pady=10)
 	
 	slider("Explosiveness", explosiveness, 0, 0)
 	slider("Flammability", flammability, 0, 1)
@@ -188,17 +193,17 @@ def item_creator(root, callback, initial_data=None):
 			# Item fields
 			"name": name.get(),
 			"color": color.get(),
-			"explosiveness": explosiveness.get(),
-			"flammability": flammability.get(),
-			"radioactivity": radioactivity.get(),
-			"charge": charge.get(),
-			"hardness": hardness.get(),
-			"cost": cost.get(),
-			"health_scaling": health_scaling.get(),
+			"explosiveness": round(explosiveness.get(), 2),
+			"flammability": round(flammability.get(), 2),
+			"radioactivity": round(radioactivity.get(), 2),
+			"charge": round(charge.get(), 2),
+			"hardness": round(hardness.get(), 2),
+			"cost": round(cost.get(), 2),
+			"health_scaling": round(health_scaling.get(), 2),
 			"low_priority": low_priority.get() == "true",
 			"frames": frames.get(),
 			"transition_frames": transition_frames.get(),
-			"frame_time": frame_time.get(),
+			"frame_time": round(frame_time.get(), 2),
 			"buildable": buildable.get() == "true",
 			"hidden": hidden.get() == "true",
 			"hidden_on_planets": hidden_on_planets,

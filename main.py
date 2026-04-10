@@ -4,6 +4,7 @@ import os
 
 from core.project import Project
 from UI.views.main_window import MainWindow
+import modules
 
 
 def main():

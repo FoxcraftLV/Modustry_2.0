@@ -43,7 +43,7 @@ class Item(ModElement):
 		"hidden_on_planets": list,
 	}
 	
-	def generate(self, data, project):
+	def generate(self, data, project, image_path):
 		"""
 		Generates the JSON/HJSON file for this item.
 		Combines UnlockableContent metadata with item-specific fields.
@@ -81,10 +81,14 @@ class Item(ModElement):
 			"hidden": data["hidden"],
 			"hidden_on_planets": data["hidden_on_planets"],
 			})
-		
+
+
+
 		# Write the file
-		filemane = f"items/{data['name']}.json"
-		project.write_json(filemane, metadata)
+		json_filename = f"content/items/{data['name']}.json"
+		sprite_dest = f"sprites/items/{data['name']}.png"
+		project.write_json(json_filename, metadata)
+		project.copy_asset(image_path, sprite_dest)
 
 registry.register(Item)
 
